@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-main: #262b33;
+  --color-sub: #738199;
+}
+
+/* tailwind prefix breakpoints
+  기본 (prefix 없음): 모바일 (0px~)
+  sm: 640px 이상 (작은 태블릿)
+  md: 768px 이상 (태블릿)
+  lg: 1024px 이상 (작은 노트북)
+  xl: 1280px 이상 (데스크톱)
+  2xl: 1536px 이상 (큰 데스크톱)
+ */
+
+:root {
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
