@@ -1,8 +1,24 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'KIMM';
+  font-weight: 300;
+  font-style: normal;
+  src: url('./assets/font/KIMM_Light.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'KIMM';
+  font-weight: 700;
+  font-style: normal;
+  src: url('./assets/font/KIMM_bold.ttf') format('truetype');
+}
+
 @theme {
   --color-main: #262b33;
   --color-sub: #738199;
+
+  --font-family-kimm: KIMM, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 /* tailwind prefix breakpoints
