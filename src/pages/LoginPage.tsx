@@ -47,6 +47,11 @@ export default function LoginPage() {
               className='cursor-pointer w-full flex items-center justify-center px-4 py-3 border border-main rounded-lg shadow-sm text-sm font-medium text-main bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main transition-colors'>
               TEST Login
             </button>
+            <button
+              onClick={() => navigate('/api-test')}
+              className='cursor-pointer w-full flex items-center justify-center px-4 py-3 border border-main rounded-lg shadow-sm text-sm font-medium text-main bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main transition-colors'>
+              API_TEST
+            </button>
           </div>
         </div>
       </div>

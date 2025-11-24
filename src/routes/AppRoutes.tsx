@@ -2,19 +2,21 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import LoginPage from '../pages/LoginPage'
 import ChatPage from '../pages/ChatPage'
+import TestPage from '../pages/TestPage'
+import AuthCallbackPage from '../pages/AuthCallbackPage'
 
 const pageVariants = {
   initial: {
     opacity: 0,
-    x: 40,
+    y: 40,
   },
   animate: {
     opacity: 1,
-    x: 0,
+    y: 0,
   },
   exit: {
     opacity: 0,
-    x: -40,
+    y: -40,
   },
 }
 
@@ -55,6 +57,45 @@ export default function AppRoutes() {
                 variants={pageVariants}
                 transition={pageTransition}>
                 <ChatPage />
+              </motion.div>
+            }
+          />
+          <Route
+            path='/api-test'
+            element={
+              <motion.div
+                initial='initial'
+                animate='animate'
+                exit='exit'
+                variants={pageVariants}
+                transition={pageTransition}>
+                <TestPage />
+              </motion.div>
+            }
+          />
+          <Route
+            path='/auth/callback'
+            element={
+              <motion.div
+                initial='initial'
+                animate='animate'
+                exit='exit'
+                variants={pageVariants}
+                transition={pageTransition}>
+                <AuthCallbackPage />
+              </motion.div>
+            }
+          />
+          <Route
+            path='/auth/google/callback'
+            element={
+              <motion.div
+                initial='initial'
+                animate='animate'
+                exit='exit'
+                variants={pageVariants}
+                transition={pageTransition}>
+                <AuthCallbackPage />
               </motion.div>
             }
           />
