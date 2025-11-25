@@ -18,6 +18,16 @@ export default function AuthCallbackPage() {
       const error = searchParams.get('error')
       const from = searchParams.get('from') // 어디서 왔는지 구분 (login or api-test)
 
+      // 디버깅: 받은 파라미터 확인
+      console.log('🔍 AuthCallback - 받은 파라미터:', {
+        token: token ? `${token.substring(0, 20)}...` : null,
+        code: code ? `${code.substring(0, 20)}...` : null,
+        state: state ? `${state.substring(0, 20)}...` : null,
+        error,
+        from,
+        fullURL: window.location.href,
+      })
+
       if (error) {
         setStatus('error')
         setMessage(`로그인 실패: ${error}`)

@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import main_logo from '../../assets/main_logo.png'
 import SidebarToggleButton from './SidebarToggleButton'
+import SessionList from './SessionList'
+import ProfileSection from './ProfileSection'
 
 interface SidebarProps {
   isOpen: boolean
@@ -31,8 +33,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className='relative h-full flex flex-col p-4'>
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className='relative h-full flex flex-col p-6'>
           <div className='flex items-center justify-between mb-6'>
             <img
               src={main_logo}
@@ -44,6 +46,13 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
               onClick={onToggle}
             />
           </div>
+          {/* 채팅 세션 목록 */}
+          <div className='flex-1 overflow-hidden min-h-0'>
+            <SessionList />
+          </div>
+
+          {/* 프로필 섹션 */}
+          <ProfileSection />
         </motion.div>
       )}
 
@@ -52,7 +61,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className='relative h-full flex flex-col items-center py-4 w-16'>
           <div className='p-1'>
             <SidebarToggleButton

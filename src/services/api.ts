@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios'
 
 // ==================== 환경 설정 ====================
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 // ==================== Axios 인스턴스 ====================
 export const api = axios.create({

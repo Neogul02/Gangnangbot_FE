@@ -48,7 +48,7 @@ export default function TestPage() {
       const response: TokenResponse = await generateTestToken(userId)
       tokenManager.save(response.access_token)
       addLog('✅ 토큰 생성 성공!', response)
-      
+
       // 토큰 생성 후 자동으로 프로필 저장 (백엔드가 user_id 검증을 위해 필요)
       addLog('👨‍🎓 프로필 자동 저장 시도...')
       try {
