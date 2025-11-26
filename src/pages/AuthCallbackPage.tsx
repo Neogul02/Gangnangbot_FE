@@ -47,7 +47,7 @@ export default function AuthCallbackPage() {
           if (from === 'api-test') {
             navigate('/api-test')
           } else {
-            navigate('/chat')
+            navigate('/login') // 로그인 페이지로 리다이렉트
           }
         }, 1500)
         return

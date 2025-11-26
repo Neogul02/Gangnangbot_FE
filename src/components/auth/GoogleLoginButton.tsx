@@ -1,107 +1,19 @@
-import { useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-interface GoogleUser {
-  id: string
-  name: string
-  email: string
-  imageUrl: string
-}
+import { redirectToGoogleLogin } from '../../services'
 
 interface GoogleLoginButtonProps {
-  onSuccess?: (user: GoogleUser) => void
-  onError?: (error: Error) => void
+  from?: 'login' | 'api-test'
 }
 
-declare global {
-  interface Window {
-    gapi: {
-      load: (api: string, callback: () => void) => void
-      auth2: {
-        init: (config: { client_id: string; cookiepolicy: string }) => {
-          attachClickHandler: (element: HTMLElement, options: Record<string, unknown>, onSuccess: (user: unknown) => void, onError: (error: unknown) => void) => void
-        }
-      }
-    }
+export default function GoogleLoginButton({ from = 'login' }: GoogleLoginButtonProps) {
+  const handleGoogleLogin = () => {
+    console.log('🔑 Google OAuth 로그인 시작...', { from })
+    redirectToGoogleLogin(from)
   }
-}
-
-export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps) {
-  const buttonRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-
-  const initGoogleAuth = useCallback(() => {
-    if (!window.gapi) return
-
-    window.gapi.load('auth2', () => {
-      const auth2 = window.gapi.auth2.init({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID.apps.googleusercontent.com',
-        cookiepolicy: 'single_host_origin',
-      })
-
-      if (buttonRef.current) {
-        auth2.attachClickHandler(
-          buttonRef.current,
-          {},
-          (googleUser: unknown) => {
-            const user = googleUser as {
-              getBasicProfile: () => {
-                getId: () => string
-                getName: () => string
-                getEmail: () => string
-                getImageUrl: () => string
-              }
-            }
-            const profile = user.getBasicProfile()
-            const userData: GoogleUser = {
-              id: profile.getId(),
-              name: profile.getName(),
-              email: profile.getEmail(),
-              imageUrl: profile.getImageUrl(),
-            }
-
-            if (onSuccess) {
-              onSuccess(userData)
-            } else {
-              // 기본 동작: 채팅 페이지로 이동
-              console.log('Google Login Success:', userData)
-              navigate('/chat')
-            }
-          },
-          (error: unknown) => {
-            console.error('Google Login Error:', error)
-            if (onError) {
-              onError(error as Error)
-            } else {
-              alert('로그인에 실패했습니다. 다시 시도해주세요.')
-            }
-          }
-        )
-      }
-    })
-  }, [navigate, onSuccess, onError])
-
-  useEffect(() => {
-    // Google API 스크립트 로드
-    const script = document.createElement('script')
-    script.src = 'https://apis.google.com/js/api:client.js'
-    script.async = true
-    script.defer = true
-    document.body.appendChild(script)
-
-    script.onload = () => {
-      initGoogleAuth()
-    }
-
-    return () => {
-      document.body.removeChild(script)
-    }
-  }, [initGoogleAuth])
 
   return (
-    <div
-      ref={buttonRef}
-      className='flex items-center justify-center w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors group'>
+    <button
+      onClick={handleGoogleLogin}
+      className='flex items-center justify-center w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main'>
       {/* Google Icon */}
       <div className='flex items-center justify-center w-5 h-5 mr-3'>
         <svg
@@ -128,6 +40,6 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
 
       {/* Button Text */}
       <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900'>Google로 로그인</span>
-    </div>
+    </button>
   )
 }

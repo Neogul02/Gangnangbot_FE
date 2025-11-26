@@ -23,7 +23,7 @@ export default function ChatPage() {
       </div>
 
       {/* Layout */}
-      <div className='flex w-full h-screen overflow-hidden'>
+      <div className='flex w-full h-screen overflow-hidden '>
         {/* Sidebar - Desktop only */}
         <Sidebar
           isOpen={isSidebarOpen}

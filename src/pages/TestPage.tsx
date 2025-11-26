@@ -503,7 +503,7 @@ export default function TestPage() {
               <h3 className='font-bold text-yellow-800 mb-2'>Environment Info</h3>
               <div className='text-xs md:text-sm text-yellow-700 space-y-2'>
                 <p>
-                  <strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}
+                  <strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL}
                 </p>
                 <p>
                   <strong>로그인 상태:</strong> {isAuthenticated() ? '✅ 로그인됨' : '❌ 로그아웃됨'}

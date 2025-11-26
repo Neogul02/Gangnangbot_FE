@@ -5,7 +5,10 @@ export default function ChatArea() {
     <motion.div
       layout
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className='flex-1 flex flex-col h-full'>
+      className='flex-1 flex flex-col h-full bg-amber-100'>
+
+
+        
 
         
       </motion.div>

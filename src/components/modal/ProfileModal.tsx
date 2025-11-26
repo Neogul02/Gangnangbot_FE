@@ -50,7 +50,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 {/* 설정 버튼 */}
                 <button
                   onClick={handleSettings}
-                  className='w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/30 transition-colors rounded-t-xl'>
+                  className='cursor-pointer w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/50 transition-colors rounded-t-xl'>
                   <div className='w-8 h-8 flex items-center justify-center'>
                     <svg
                       className='w-5 h-5 text-gray-800'
@@ -77,7 +77,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 {/* 로그아웃 버튼 */}
                 <button
                   onClick={handleLogout}
-                  className='w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/30 transition-colors rounded-b-xl'>
+                  className='cursor-pointer w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/50 transition-colors rounded-b-xl'>
                   <div className='w-8 h-8 flex items-center justify-center'>
                     <svg
                       className='w-5 h-5 text-gray-800'
