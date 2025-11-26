@@ -75,9 +75,9 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
       return
     }
 
-    // 학번 형식 검증 (8자리 숫자)
-    if (!/^\d{8}$/.test(studentId)) {
-      alert('학번은 8자리 숫자로 입력해주세요. (예: 20251234)')
+    // 학번 형식 검증 (9자리 숫자)
+    if (!/^\d{9}$/.test(studentId)) {
+      alert('학번은 9자리 숫자로 입력해주세요. (예: 202512345)')
       return
     }
 

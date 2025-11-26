@@ -7,7 +7,7 @@ export default function ProfileSection() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const user = useUserStore((state) => state.user)
 
-  const userEmail = user?.email || 'hello@gmail.com'
+  const userEmail = user?.email || ''
   const userPicture = user?.picture
 
   return (
