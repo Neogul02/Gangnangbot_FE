@@ -81,6 +81,8 @@ export interface SSEMessage {
 export async function streamSSE(endpoint: string, data: unknown, onMessage: (message: SSEMessage) => void, onError?: (error: Error) => void): Promise<void> {
   const token = tokenManager.get()
 
+  console.log('🚀 streamSSE 시작:', { endpoint, data })
+
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
@@ -89,6 +91,12 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
+    })
+
+    console.log('📡 fetch 응답 수신:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
     })
 
     if (!response.ok) {
@@ -104,11 +112,21 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
 
     // 스트리밍 데이터 읽기
     let isStreamingDone = false
+    let chunkCount = 0
     while (true) {
+      console.log(`📖 reader.read() 호출 (청크 #${chunkCount + 1})`)
       const { done, value } = await reader.read()
-      if (done) break
+      console.log(`📥 reader.read() 결과:`, { done, valueLength: value?.length })
 
+      if (done) {
+        console.log('🏁 reader 스트림 종료 (done: true)')
+        break
+      }
+
+      chunkCount++
       const chunk = decoder.decode(value)
+      console.log(`📦 청크 #${chunkCount} 디코딩 완료:`, { length: chunk.length, preview: chunk.substring(0, 100) })
+
       const lines = chunk.split('\n')
 
       for (const line of lines) {
@@ -191,15 +209,15 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
             console.warn('SSE 파싱 오류:', e)
           }
         }
-        
+
         // 내부 루프에서 done 신호 받으면 외부 루프도 종료
         if (isStreamingDone) break
       }
-      
+
       // 외부 루프에서도 done 신호 확인
       if (isStreamingDone) break
     }
-    
+
     console.log('✅ SSE 스트리밍 완전 종료')
   } catch (error) {
     if (onError) {
