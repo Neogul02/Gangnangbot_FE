@@ -125,18 +125,20 @@ export default function ChatArea() {
         (chunk) => {
           console.log('📦 청크 수신:', chunk)
 
-          // done 신호면 스트리밍 종료
-          if (chunk.done) {
-            console.log('✅ 스트리밍 완료 신호 수신')
-            return
+          // text 필드가 있으면 누적해서 표시
+          if (chunk.text) {
+            fullAIResponse += chunk.text // 누적!
+            console.log('📝 텍스트 누적:', {
+              chunkLength: chunk.text.length,
+              totalLength: fullAIResponse.length,
+              done: chunk.done,
+            })
+            setStreamingContent(fullAIResponse) // 누적된 전체 텍스트 표시
           }
 
-          // text 필드가 있으면 즉시 표시
-          if (chunk.text) {
-            fullAIResponse = chunk.text
-            console.log('📝 setStreamingContent 호출 전 - isLoading:', isLoading, 'chunk.text.length:', chunk.text.length)
-            setStreamingContent(chunk.text) // 즉시 표시
-            console.log('📝 텍스트 즉시 표시 완료')
+          // done 신호면 스트리밍 종료
+          if (chunk.done) {
+            console.log('✅ 스트리밍 완료 신호 수신, 최종 길이:', fullAIResponse.length)
           }
         },
         (error) => {
