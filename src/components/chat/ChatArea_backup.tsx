@@ -107,7 +107,7 @@ export default function ChatArea() {
         queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
       }
 
-      // 메시지 전송
+      // 메시지 전송 (일반 응답)
       console.log('📤 메시지 전송 중...')
       let fullAIResponse = ''
 
@@ -508,8 +508,8 @@ export default function ChatArea() {
                   aria-label='메시지 전송'
                   className={`cursor-pointer shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 disabled:hover:scale-100 ${
                     inputValue.trim()
-                      ? 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,#4E92FF_0%,rgba(78,146,255,0.50)_100%)]'
-                      : 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,#B2D0FF_0%,rgba(178,208,255,0.50)_70%,rgba(178,208,255,0)_100%)]'
+                      ? 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#4E92FF_0%,_rgba(78,_146,_255,_0.50)_100%)]'
+                      : 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#B2D0FF_0%,_rgba(178,_208,_255,_0.50)_70%,_rgba(178,_208,_255,_0)_100%)]'
                   }`}>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
