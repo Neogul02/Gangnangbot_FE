@@ -37,6 +37,15 @@ export default function ChatArea() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingContent])
 
+  // 디버깅: streamingContent 변화 추적
+  useEffect(() => {
+    console.log('🔄 streamingContent 변경됨:', {
+      length: streamingContent.length,
+      preview: streamingContent.substring(0, 50),
+      isLoading,
+    })
+  }, [streamingContent, isLoading])
+
   // 세션의 메시지 내역 불러오기
   const loadSessionMessages = useCallback(async (sessionId: string) => {
     try {
@@ -125,8 +134,9 @@ export default function ChatArea() {
           // text 필드가 있으면 즉시 표시
           if (chunk.text) {
             fullAIResponse = chunk.text
+            console.log('📝 setStreamingContent 호출 전 - isLoading:', isLoading, 'chunk.text.length:', chunk.text.length)
             setStreamingContent(chunk.text) // 즉시 표시
-            console.log('📝 텍스트 즉시 표시:', chunk.text.length, '글자')
+            console.log('📝 텍스트 즉시 표시 완료')
           }
         },
         (error) => {
@@ -147,12 +157,32 @@ export default function ChatArea() {
 
       // 스트리밍 완료 후 처리
       console.log('✅ 메시지 전송 완료')
+      console.log('📊 fullAIResponse 길이:', fullAIResponse.length)
+      console.log('📊 fullAIResponse 내용:', fullAIResponse.substring(0, 100))
+
+      // fullAIResponse가 비어있으면 에러 처리
+      if (!fullAIResponse) {
+        console.error('❌ fullAIResponse가 비어있음!')
+        setIsLoading(false)
+        setStreamingContent('')
+
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'ai',
+          content: '죄송합니다. 응답을 받지 못했습니다. 다시 시도해주세요.',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+        return
+      }
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
         content: fullAIResponse,
         timestamp: new Date(),
       }
+      console.log('💾 메시지 목록에 추가:', aiMessage)
       setMessages((prev) => [...prev, aiMessage])
       setStreamingContent('')
       setIsLoading(false)
@@ -344,7 +374,11 @@ export default function ChatArea() {
               ))}
 
               {/* 스트리밍 중인 AI 응답 */}
-              {isLoading && streamingContent && (
+              {(() => {
+                const shouldShow = isLoading && streamingContent
+                console.log('🖼️ 스트리밍 UI 렌더링 조건:', { isLoading, hasContent: !!streamingContent, shouldShow })
+                return shouldShow
+              })() && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
