@@ -14,10 +14,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     <motion.aside
       initial={false}
       animate={{
-        width: isOpen ? 370 : 'auto',
+        width: isOpen ? 370 : 64,
       }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className='relative h-full overflow-visible hidden lg:block'>
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className='relative h-full overflow-hidden hidden lg:block'>
       {/* iOS Style Liquid Glass Background */}
       <div
         className='absolute inset-0 border-r border-white/30 shadow-2xl'
@@ -33,7 +33,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.25, delay: 0.05, ease: 'easeInOut' }}
           className='relative h-full flex flex-col p-6'>
           <div className='flex items-center justify-between mb-6'>
             <img
@@ -61,7 +61,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.25, delay: 0.06, ease: 'easeInOut' }}
           className='relative h-full flex flex-col items-center py-4 w-16'>
           <div className='p-1'>
             <SidebarToggleButton

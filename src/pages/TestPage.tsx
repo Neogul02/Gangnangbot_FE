@@ -109,6 +109,24 @@ export default function TestPage() {
       addLog('✅ 세션 생성 성공!', session)
     } catch (error) {
       addLog('❌ 세션 생성 실패', error)
+
+      // Axios 에러 타입 체크
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { detail?: string } } }
+        const errorDetail = axiosError.response?.data?.detail
+
+        if (axiosError.response?.status === 500) {
+          if (errorDetail && (errorDetail.includes('ReasoningEngine') || errorDetail.includes('reasoning engine'))) {
+            addLog('🔧 백엔드 설정 오류: ReasoningEngine ID가 잘못 설정되었습니다.')
+            addLog('📌 백엔드 담당자에게 다음을 확인하세요:')
+            addLog('   - reasoning_engine_id 값이 올바른지 확인')
+            addLog('   - full resource name 대신 engine ID만 사용하고 있는지 확인')
+            addLog(`   - 현재 오류: ${errorDetail}`)
+          } else {
+            addLog('⚠️ 힌트: 프로필이 저장되지 않았을 수 있습니다. "프로필 저장" 버튼을 먼저 클릭하세요.')
+          }
+        }
+      }
     }
   }
 

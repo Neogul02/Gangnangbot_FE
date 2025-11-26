@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { tokenManager } from '../services'
+import { tokenManager, getMe, saveProfile } from '../services'
 import Background from '../components/Background'
 
 export default function AuthCallbackPage() {
@@ -40,8 +40,38 @@ export default function AuthCallbackPage() {
       // 백엔드가 토큰을 직접 보내준 경우
       if (token) {
         tokenManager.save(token)
+
+        // 사용자 정보 조회 및 프로필 자동 생성
+        try {
+          const user = await getMe()
+          console.log('✅ 사용자 정보 조회 성공:', user)
+
+          // 기본 프로필 생성 시도 (이미 있으면 400 에러 발생하지만 무시)
+          try {
+            await saveProfile({
+              user_id: Number(user.id),
+              profile_name: user.name || '사용자',
+              student_id: '00000000', // 임시 학번
+              college: '미설정',
+              department: '미설정',
+              major: '미설정',
+              current_grade: 1,
+              current_semester: 1,
+            })
+            console.log('✅ 기본 프로필 생성 성공')
+            setMessage('로그인 및 프로필 생성 완료! 리다이렉트 중...')
+          } catch (profileError) {
+            // 프로필이 이미 존재하거나 다른 오류 발생 시 무시
+            const errorMessage = profileError instanceof Error ? profileError.message : '알 수 없는 오류'
+            console.log('ℹ️ 프로필 생성 건너뛰기:', errorMessage)
+            setMessage('로그인 성공! 리다이렉트 중...')
+          }
+        } catch (error) {
+          console.error('❌ 사용자 정보 조회 실패:', error)
+          setMessage('로그인 성공! (프로필 확인 실패) 리다이렉트 중...')
+        }
+
         setStatus('success')
-        setMessage('로그인 성공! 리다이렉트 중...')
 
         setTimeout(() => {
           if (from === 'api-test') {
