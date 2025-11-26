@@ -43,10 +43,12 @@ export default function ChatArea() {
       return
     }
 
+    console.log('⚡ 타자기 효과 시작:', chunkQueueRef.current.length, '글자')
     isProcessingRef.current = true
 
     const processNext = () => {
       if (chunkQueueRef.current.length === 0) {
+        console.log('✅ 타자기 효과 완료')
         isProcessingRef.current = false
         return
       }
@@ -149,23 +151,30 @@ export default function ChatArea() {
       await sendMessage(
         { session_id: sessionId, message: userMessageContent },
         (chunk) => {
+          console.log('📦 청크 수신:', chunk)
+
           // done 신호면 스트리밍 종료
           if (chunk.done) {
-            return 
+            console.log('✅ 스트리밍 완료 신호 수신')
+            return
           }
 
-          // text 필드가 있으면 전체 텍스트로 처리 (타자기 효과)
+          // text 필드가 있으면 텍스트 처리
           if (chunk.text) {
+            // 전체 응답 누적 (덮어쓰기)
             fullAIResponse = chunk.text
 
-            // 텍스트를 한 글자씩 큐에 추가
+            // 새로운 청크를 받으면 기존 큐를 초기화하고 전체 텍스트로 다시 채움
+            // (API가 전체 텍스트를 한 번에 보내는 경우 대응)
             chunkQueueRef.current = []
             fullTextRef.current = ''
 
+            // 텍스트를 한 글자씩 큐에 추가
             for (let i = 0; i < chunk.text.length; i++) {
               chunkQueueRef.current.push(chunk.text[i])
             }
 
+            console.log('📝 타자기 큐 생성:', chunkQueueRef.current.length, '글자')
             processChunkQueue()
           }
         },
@@ -426,47 +435,10 @@ export default function ChatArea() {
                       backdropFilter: 'blur(23px)',
                       WebkitBackdropFilter: 'blur(23px)',
                     }}>
-                    <div className='text-sm md:text-base prose prose-sm max-w-none'>
-                      <ReactMarkdown
-                        rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                        components={{
-                          a: (props) => (
-                            <a
-                              {...props}
-                              className='text-blue-600 hover:text-blue-800 underline'
-                              target='_blank'
-                              rel='noopener noreferrer'
-                            />
-                          ),
-                          strong: (props) => (
-                            <strong
-                              {...props}
-                              className='font-bold text-gray-900'
-                            />
-                          ),
-                          ul: (props) => (
-                            <ul
-                              {...props}
-                              className='list-disc list-inside my-2 space-y-1'
-                            />
-                          ),
-                          ol: (props) => (
-                            <ol
-                              {...props}
-                              className='list-decimal list-inside my-2 space-y-1'
-                            />
-                          ),
-                          p: (props) => (
-                            <p
-                              {...props}
-                              className='my-2 text-gray-800'
-                            />
-                          ),
-                        }}>
-                        {streamingContent}
-                      </ReactMarkdown>
+                    <p className='text-sm md:text-base whitespace-pre-wrap text-gray-800'>
+                      {streamingContent}
                       <span className='inline-block w-1 h-4 bg-gray-500 ml-1 animate-pulse' />
-                    </div>
+                    </p>
                   </div>
                 </motion.div>
               )}
