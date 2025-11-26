@@ -135,22 +135,23 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
             const data = JSON.parse(line.slice(6))
             console.log('🔍 SSE 데이터 파싱:', data)
 
-            // 1. 타자기 효과용 청크 (text, done 필드)
-            if ('text' in data && 'done' in data) {
-              console.log('✅ text/done 형식 감지:', { textLength: data.text?.length, done: data.done })
+            // 1. 텍스트 응답 처리 (text 필드만 있어도 처리)
+            if ('text' in data) {
+              const isDone = 'done' in data ? data.done : false
+              console.log('✅ text 형식 감지:', { textLength: data.text?.length, done: isDone })
 
-              // 일반 텍스트 청크 전달 (done 여부와 관계없이)
+              // 텍스트가 있으면 전달
               if (data.text) {
                 const message: SSEMessage = {
                   text: data.text,
-                  done: data.done || false,
+                  done: isDone,
                 }
                 console.log('📤 onMessage 호출:', message)
                 onMessage(message)
               }
 
               // done: true이고 text가 비어있으면 스트리밍 종료 신호
-              if (data.done && !data.text) {
+              if (isDone && !data.text) {
                 const message: SSEMessage = {
                   text: '',
                   done: true,
@@ -159,12 +160,14 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
               }
 
               // done: true 받으면 스트리밍 종료
-              if (data.done) {
+              if (isDone) {
                 console.log('🏁 done:true 수신, 스트리밍 종료')
                 isStreamingDone = true
                 reader.cancel()
                 break
               }
+              
+              // done 필드가 없으면 스트림 계속 (서버가 done을 안 보낼 수 있음)
               continue
             }
 
