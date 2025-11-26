@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Background from '../components/Background'
 import Sidebar from '../components/chat/Sidebar'
@@ -7,9 +7,27 @@ import SidebarToggleButton from '../components/chat/SidebarToggleButton'
 import SessionList from '../components/chat/SessionList'
 import ProfileSection from '../components/chat/ProfileSection'
 import main_logo from '../assets/main_logo.png'
+import { getMe } from '../services/api/auth'
+import { useUserStore } from '../store/useUserStore'
 
 export default function ChatPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const setUser = useUserStore((state) => state.setUser)
+
+  // 페이지 로드 시 사용자 정보 불러오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userInfo = await getMe()
+        setUser(userInfo)
+        console.log('✅ 사용자 정보 로드:', userInfo)
+      } catch (error) {
+        console.error('❌ 사용자 정보 로드 실패:', error)
+      }
+    }
+
+    fetchUserInfo()
+  }, [setUser])
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)

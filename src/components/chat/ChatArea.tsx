@@ -24,10 +24,40 @@ export default function ChatArea() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
+  // 타자기 효과용 refs
+  const chunkQueueRef = useRef<string[]>([]) // 청크 큐
+  const isProcessingRef = useRef(false) // 큐 처리 중 여부
+  const fullTextRef = useRef('') // 누적된 전체 텍스트
+
   const queryClient = useQueryClient()
   const { currentSessionId, setCurrentSessionId } = useSessionStore()
 
   const hasMessages = messages.length > 0
+
+  // 타자기 효과 - 청크 큐 프로세서
+  const processChunkQueue = useCallback(() => {
+    if (isProcessingRef.current || chunkQueueRef.current.length === 0) {
+      return
+    }
+
+    isProcessingRef.current = true
+
+    const processNext = () => {
+      if (chunkQueueRef.current.length === 0) {
+        isProcessingRef.current = false
+        return
+      }
+
+      const chunk = chunkQueueRef.current.shift()!
+      fullTextRef.current += chunk
+      setStreamingContent(fullTextRef.current)
+
+      // 다음 청크를 20ms 후에 처리 (타자기 효과)
+      setTimeout(processNext, 20)
+    }
+
+    processNext()
+  }, [])
 
   // 메시지 전송 시 스크롤 하단으로
   useEffect(() => {
@@ -88,6 +118,11 @@ export default function ChatArea() {
     setIsLoading(true)
     setStreamingContent('')
 
+    // 타자기 효과용 refs 초기화
+    chunkQueueRef.current = []
+    isProcessingRef.current = false
+    fullTextRef.current = ''
+
     try {
       let sessionId = currentSessionId
 
@@ -111,14 +146,25 @@ export default function ChatArea() {
       await sendMessage(
         { session_id: sessionId, message: userMessageContent },
         (chunk) => {
-          // 스트리밍 중 - 텍스트 누적
-          fullAIResponse += chunk.text
-          setStreamingContent(fullAIResponse)
+          // done 신호면 스트리밍 종료
+          if (chunk.done) {
+            return
+          }
+
+          // 청크를 큐에 추가
+          if (chunk.text) {
+            fullAIResponse += chunk.text
+            chunkQueueRef.current.push(chunk.text)
+            processChunkQueue()
+          }
         },
         (error) => {
           console.error('❌ 메시지 전송 실패:', error)
           setStreamingContent('')
           setIsLoading(false)
+          chunkQueueRef.current = []
+          isProcessingRef.current = false
+          fullTextRef.current = ''
 
           // 에러 메시지 표시
           const errorMessage: Message = {
@@ -142,6 +188,11 @@ export default function ChatArea() {
       setMessages((prev) => [...prev, aiMessage])
       setStreamingContent('')
       setIsLoading(false)
+
+      // 타자기 효과용 refs 초기화
+      chunkQueueRef.current = []
+      isProcessingRef.current = false
+      fullTextRef.current = ''
 
       // 메시지 전송 완료 후 세션 목록 갱신 (제목이 업데이트될 수 있음)
       queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })

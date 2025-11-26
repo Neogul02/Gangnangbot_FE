@@ -115,16 +115,33 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
           try {
             const data = JSON.parse(line.slice(6))
 
-            // role이 'model'이고 parts에 text가 있는 경우만 처리 (AI의 실제 답변)
-            if (data.role !== 'model') {
+            // 1. 타자기 효과용 청크 (text, done 필드)
+            if ('text' in data && 'done' in data) {
+              // done: true이고 text가 비어있으면 스트리밍 종료 신호
+              if (data.done && !data.text) {
+                const message: SSEMessage = {
+                  text: '',
+                  done: true,
+                }
+                onMessage(message)
+                continue
+              }
+
+              // 일반 텍스트 청크 전달 (타자기 효과)
+              if (data.text) {
+                const message: SSEMessage = {
+                  text: data.text,
+                  done: data.done,
+                }
+                onMessage(message)
+              }
               continue
             }
 
-            // parts 배열에서 text만 추출
-            let textContent = ''
-            if (data.parts && Array.isArray(data.parts)) {
+            // 2. Vertex AI 원본 응답 (parts, role 필드) - 마크다운 처리용
+            if (data.parts && Array.isArray(data.parts) && data.role === 'model') {
+              let textContent = ''
               for (const part of data.parts) {
-                // parts 배열의 각 항목이 또 다른 객체를 포함하는 경우
                 if (typeof part === 'object' && part !== null) {
                   // 'text' 키를 가진 경우 직접 추출
                   if ('text' in part && typeof part.text === 'string') {
@@ -140,20 +157,24 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
                   }
                 }
               }
-            }
 
-            // 텍스트가 없으면 스킵
-            if (!textContent) {
+              // 텍스트가 있으면 마크다운 렌더링용으로 전달
+              if (textContent) {
+                const message: SSEMessage = {
+                  text: textContent,
+                  done: false,
+                }
+                onMessage(message)
+              }
               continue
             }
 
-            // 변환된 형식으로 전달
-            const message: SSEMessage = {
-              text: textContent,
-              done: false,
+            // 3. 에러 처리
+            if (data.error) {
+              if (onError) {
+                onError(new Error(data.text || '알 수 없는 오류가 발생했습니다'))
+              }
             }
-
-            onMessage(message)
           } catch (e) {
             console.warn('SSE 파싱 오류:', e)
           }

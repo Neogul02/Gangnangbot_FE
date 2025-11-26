@@ -2,7 +2,7 @@
 
 // ========== Auth (인증) ==========
 export interface User {
-  id: number
+  id: string
   email: string
   name: string
   picture?: string

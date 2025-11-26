@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { logout } from '../../services/api/auth'
+import SettingModal from './SettingModal'
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -9,13 +11,15 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+  const [isSettingModalOpen, setIsSettingModalOpen] = useState(false)
+
   const handleLogout = () => {
     logout()
   }
 
   const handleSettings = () => {
-    // 설정 페이지로 이동
-    console.log('설정 페이지로 이동')
+    setIsSettingModalOpen(true)
+    onClose() // ProfileModal 닫기
   }
 
   return (
@@ -99,6 +103,12 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           </div>
         </>
       )}
+
+      {/* 설정 모달 */}
+      <SettingModal
+        isOpen={isSettingModalOpen}
+        onClose={() => setIsSettingModalOpen(false)}
+      />
     </AnimatePresence>
   )
 }

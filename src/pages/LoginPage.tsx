@@ -20,7 +20,7 @@ export default function LoginPage() {
 
       {/* Login Form */}
       <div className='max-w-md w-full space-y-6 md:space-y-8 relative z-10'>
-        <div className='rounded-2xl p-6 md:p-8 bg-orange-50/30 backdrop-blur-md'>
+        <div className='rounded-2xl p-6 md:p-8'>
           <img
             src={main_logo}
             alt='main_logo'
