@@ -103,6 +103,7 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
     }
 
     // 스트리밍 데이터 읽기
+    let isStreamingDone = false
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -137,6 +138,14 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
                   done: true,
                 }
                 onMessage(message)
+              }
+
+              // done: true 받으면 스트리밍 종료
+              if (data.done) {
+                console.log('🏁 done:true 수신, 스트리밍 종료')
+                isStreamingDone = true
+                reader.cancel()
+                break
               }
               continue
             }
@@ -182,8 +191,16 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
             console.warn('SSE 파싱 오류:', e)
           }
         }
+        
+        // 내부 루프에서 done 신호 받으면 외부 루프도 종료
+        if (isStreamingDone) break
       }
+      
+      // 외부 루프에서도 done 신호 확인
+      if (isStreamingDone) break
     }
+    
+    console.log('✅ SSE 스트리밍 완전 종료')
   } catch (error) {
     if (onError) {
       onError(error as Error)
