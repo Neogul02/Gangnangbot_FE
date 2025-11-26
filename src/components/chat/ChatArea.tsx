@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQueryClient } from '@tanstack/react-query'
 import main_logo from '../../assets/main_logo.png'
@@ -20,6 +20,7 @@ export default function ChatArea() {
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [streamingContent, setStreamingContent] = useState('') // 스트리밍 중인 AI 응답
+  const [isNewSession, setIsNewSession] = useState(false) // 새 세션 생성 플래그
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -33,15 +34,8 @@ export default function ChatArea() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingContent])
 
-  // 세션이 변경되면 메시지 불러오기
-  useEffect(() => {
-    if (currentSessionId) {
-      loadSessionMessages(currentSessionId)
-    }
-  }, [currentSessionId])
-
   // 세션의 메시지 내역 불러오기
-  const loadSessionMessages = async (sessionId: string) => {
+  const loadSessionMessages = useCallback(async (sessionId: string) => {
     try {
       const response = await getSessionMessages(sessionId)
       const loadedMessages: Message[] = response.messages.map((msg, index) => ({
@@ -54,11 +48,33 @@ export default function ChatArea() {
     } catch (error) {
       console.error('메시지 불러오기 실패:', error)
     }
-  }
+  }, [])
+
+  // 세션이 변경되면 메시지 불러오기
+  useEffect(() => {
+    if (currentSessionId && !isNewSession) {
+      // 새 세션이 아닐 때만 메시지 불러오기
+      console.log('📥 세션 메시지 불러오기:', currentSessionId)
+      loadSessionMessages(currentSessionId)
+    } else if (!currentSessionId) {
+      // 세션이 없으면 메시지 초기화 (새 채팅 시작)
+      console.log('🆕 메시지 초기화')
+      setMessages([])
+    }
+
+    // 플래그 리셋
+    if (isNewSession) {
+      setIsNewSession(false)
+    }
+  }, [currentSessionId, loadSessionMessages, isNewSession])
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return
+    if (!inputValue.trim() || isLoading) {
+      console.log('⚠️ 전송 중단:', { hasInput: !!inputValue.trim(), isLoading })
+      return
+    }
 
+    console.log('🚀 handleSendMessage 호출됨')
     const userMessageContent = inputValue.trim()
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -80,6 +96,7 @@ export default function ChatArea() {
         console.log('📝 새 세션 생성 중...')
         const newSession = await createSession()
         sessionId = newSession.session_id
+        setIsNewSession(true) // 새 세션 플래그 설정
         setCurrentSessionId(sessionId)
         console.log('✅ 세션 생성 완료:', sessionId)
 
@@ -94,26 +111,9 @@ export default function ChatArea() {
       await sendMessage(
         { session_id: sessionId, message: userMessageContent },
         (chunk) => {
-          if (!chunk.done) {
-            // 스트리밍 중
-            fullAIResponse += chunk.text
-            setStreamingContent(fullAIResponse)
-          } else {
-            // 스트리밍 완료
-            console.log('✅ 메시지 전송 완료')
-            const aiMessage: Message = {
-              id: (Date.now() + 1).toString(),
-              type: 'ai',
-              content: fullAIResponse,
-              timestamp: new Date(),
-            }
-            setMessages((prev) => [...prev, aiMessage])
-            setStreamingContent('')
-            setIsLoading(false)
-
-            // 메시지 전송 완료 후 세션 목록 갱신 (제목이 업데이트될 수 있음)
-            queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
-          }
+          // 스트리밍 중 - 텍스트 누적
+          fullAIResponse += chunk.text
+          setStreamingContent(fullAIResponse)
         },
         (error) => {
           console.error('❌ 메시지 전송 실패:', error)
@@ -130,6 +130,21 @@ export default function ChatArea() {
           setMessages((prev) => [...prev, errorMessage])
         }
       )
+
+      // 스트리밍 완료 후 처리
+      console.log('✅ 메시지 전송 완료')
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        content: fullAIResponse,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, aiMessage])
+      setStreamingContent('')
+      setIsLoading(false)
+
+      // 메시지 전송 완료 후 세션 목록 갱신 (제목이 업데이트될 수 있음)
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
     } catch (error) {
       console.error('❌ 에러 발생:', error)
       setIsLoading(false)
@@ -356,6 +371,25 @@ export default function ChatArea() {
             WebkitBackdropFilter: 'blur(23px)',
           }}>
           <div className='max-w-4xl mx-auto'>
+            {/* 새 채팅 시작 버튼 */}
+            <button
+              onClick={() => setCurrentSessionId(undefined)}
+              className='w-full mb-3 px-4 py-2.5 bg-white/50 hover:bg-white/70 text-gray-700 rounded-2xl transition-all flex items-center justify-center gap-2 font-medium border border-white/30 shadow-md'>
+              <svg
+                className='w-4 h-4'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M12 4v16m8-8H4'
+                />
+              </svg>
+              새 대화 시작하기
+            </button>
+
             <div
               className='w-full rounded-4xl p-3 border border-white/30 shadow-xl'
               style={{

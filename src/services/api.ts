@@ -114,12 +114,33 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
         if (line.startsWith('data: ')) {
           try {
             const data = JSON.parse(line.slice(6))
-            onMessage(data)
 
-            // done이 true면 스트리밍 종료
-            if (data.done) {
-              return
+            // role이 'model'이고 parts에 text가 있는 경우만 처리 (AI의 실제 답변)
+            if (data.role !== 'model') {
+              continue
             }
+
+            // parts 배열에서 text만 추출 (function_call, function_response 제외)
+            let textContent = ''
+            if (data.parts && Array.isArray(data.parts)) {
+              textContent = data.parts
+                .filter((part: { text?: string; function_call?: unknown; function_response?: unknown }) => part.text && !part.function_call && !part.function_response)
+                .map((part: { text?: string }) => part.text || '')
+                .join('')
+            }
+
+            // 텍스트가 없으면 스킵
+            if (!textContent) {
+              continue
+            }
+
+            // 변환된 형식으로 전달
+            const message: SSEMessage = {
+              text: textContent,
+              done: false,
+            }
+
+            onMessage(message)
           } catch (e) {
             console.warn('SSE 파싱 오류:', e)
           }
