@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQueryClient } from '@tanstack/react-query'
+import ReactMarkdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw'
+import rehypeSanitize from 'rehype-sanitize'
 import response_logo from '../../assets/response_logo.png'
 import { useSessionStore } from '../../store/useSessionStore'
 import { createSession, sendMessage, getSessionMessages } from '../../services'
@@ -139,7 +142,7 @@ export default function ChatArea() {
         queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
       }
 
-      // 메시지 전송 (SSE 스트리밍)
+      // 메시지 전송 (일반 응답)
       console.log('📤 메시지 전송 중...')
       let fullAIResponse = ''
 
@@ -148,13 +151,21 @@ export default function ChatArea() {
         (chunk) => {
           // done 신호면 스트리밍 종료
           if (chunk.done) {
-            return
+            return 
           }
 
-          // 청크를 큐에 추가
+          // text 필드가 있으면 전체 텍스트로 처리 (타자기 효과)
           if (chunk.text) {
-            fullAIResponse += chunk.text
-            chunkQueueRef.current.push(chunk.text)
+            fullAIResponse = chunk.text
+
+            // 텍스트를 한 글자씩 큐에 추가
+            chunkQueueRef.current = []
+            fullTextRef.current = ''
+
+            for (let i = 0; i < chunk.text.length; i++) {
+              chunkQueueRef.current.push(chunk.text[i])
+            }
+
             processChunkQueue()
           }
         },
@@ -176,6 +187,21 @@ export default function ChatArea() {
           setMessages((prev) => [...prev, errorMessage])
         }
       )
+
+      // 타자기 효과가 끝날 때까지 대기
+      console.log('⏳ 타자기 효과 대기 중...')
+      const waitForTyping = () => {
+        return new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            if (chunkQueueRef.current.length === 0 && !isProcessingRef.current) {
+              clearInterval(checkInterval)
+              resolve()
+            }
+          }, 50)
+        })
+      }
+
+      await waitForTyping()
 
       // 스트리밍 완료 후 처리
       console.log('✅ 메시지 전송 완료')
@@ -332,7 +358,50 @@ export default function ChatArea() {
                           }
                         : undefined
                     }>
-                    <p className='text-sm md:text-base whitespace-pre-wrap wrap-break-word'>{message.content}</p>
+                    {message.type === 'user' ? (
+                      <p className='text-sm md:text-base whitespace-pre-wrap wrap-break-word'>{message.content}</p>
+                    ) : (
+                      <div className='text-sm md:text-base prose prose-sm max-w-none'>
+                        <ReactMarkdown
+                          rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                          components={{
+                            a: (props) => (
+                              <a
+                                {...props}
+                                className='text-blue-600 hover:text-blue-800 underline'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                              />
+                            ),
+                            strong: (props) => (
+                              <strong
+                                {...props}
+                                className='font-bold text-gray-900'
+                              />
+                            ),
+                            ul: (props) => (
+                              <ul
+                                {...props}
+                                className='list-disc list-inside my-2 space-y-1'
+                              />
+                            ),
+                            ol: (props) => (
+                              <ol
+                                {...props}
+                                className='list-decimal list-inside my-2 space-y-1'
+                              />
+                            ),
+                            p: (props) => (
+                              <p
+                                {...props}
+                                className='my-2 text-gray-800'
+                              />
+                            ),
+                          }}>
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -357,10 +426,47 @@ export default function ChatArea() {
                       backdropFilter: 'blur(23px)',
                       WebkitBackdropFilter: 'blur(23px)',
                     }}>
-                    <p className='text-sm md:text-base whitespace-pre-wrap wrap-break-word'>
-                      {streamingContent}
+                    <div className='text-sm md:text-base prose prose-sm max-w-none'>
+                      <ReactMarkdown
+                        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                        components={{
+                          a: (props) => (
+                            <a
+                              {...props}
+                              className='text-blue-600 hover:text-blue-800 underline'
+                              target='_blank'
+                              rel='noopener noreferrer'
+                            />
+                          ),
+                          strong: (props) => (
+                            <strong
+                              {...props}
+                              className='font-bold text-gray-900'
+                            />
+                          ),
+                          ul: (props) => (
+                            <ul
+                              {...props}
+                              className='list-disc list-inside my-2 space-y-1'
+                            />
+                          ),
+                          ol: (props) => (
+                            <ol
+                              {...props}
+                              className='list-decimal list-inside my-2 space-y-1'
+                            />
+                          ),
+                          p: (props) => (
+                            <p
+                              {...props}
+                              className='my-2 text-gray-800'
+                            />
+                          ),
+                        }}>
+                        {streamingContent}
+                      </ReactMarkdown>
                       <span className='inline-block w-1 h-4 bg-gray-500 ml-1 animate-pulse' />
-                    </p>
+                    </div>
                   </div>
                 </motion.div>
               )}
