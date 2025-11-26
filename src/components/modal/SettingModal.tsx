@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { saveProfile } from '../../services'
+import { saveProfile, getProfile } from '../../services'
 import { useUserStore } from '../../store/useUserStore'
 import MobileSettingModal from './MobileSettingModal'
 
@@ -62,12 +62,46 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
   const [grade, setGrade] = useState(1)
   const [semester, setSemester] = useState(1)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  // 모달이 열릴 때 사용자 정보로 초기화
+  // 모달이 열릴 때 프로필 로드
   useEffect(() => {
-    if (isOpen && user) {
-      setName(user.name || '')
+    const loadProfile = async () => {
+      if (!isOpen || !user) return
+
+      setIsLoading(true)
+      try {
+        const profile = await getProfile()
+
+        if (profile) {
+          // 저장된 프로필이 있으면 폼에 채우기
+          setName(profile.profile_name || user.name || '')
+          setStudentId(profile.student_id || '')
+          setCollege(profile.college || '')
+          setDepartment(profile.department || '')
+          setMajor(profile.major || '')
+          setGrade(profile.current_grade || 1)
+          setSemester(profile.current_semester || 1)
+        } else {
+          // 프로필이 없으면 기본값 설정
+          setName(user.name || '')
+          setStudentId('')
+          setCollege('')
+          setDepartment('')
+          setMajor('')
+          setGrade(1)
+          setSemester(1)
+        }
+      } catch (error) {
+        console.error('프로필 로드 실패:', error)
+        // 실패해도 기본값으로 초기화
+        setName(user.name || '')
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    loadProfile()
   }, [isOpen, user])
 
   // 단과대학 변경 시 하위 항목 초기화
@@ -196,209 +230,215 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
 
                 {/* 오른쪽: 폼 */}
                 <div className='flex-1 space-y-4'>
-                  {/* 이름 */}
-                  <div className='flex items-center gap-4'>
-                    <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>이름</label>
-                    <input
-                      type='text'
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder='이름을 입력해주세요'
-                      className='w-2/3 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 placeholder:text-slate-300'
-                    />
-                  </div>
+                  {isLoading && <div className='text-center py-8 text-gray-500'>프로필 로딩 중...</div>}
 
-                  {/* 학번 */}
-                  <div className='flex items-center gap-4'>
-                    <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>학번</label>
-                    <input
-                      type='text'
-                      value={studentId}
-                      onChange={(e) => setStudentId(e.target.value)}
-                      placeholder='학번을 입력해주세요 (ex:202001234)'
-                      maxLength={9}
-                      className='w-2/3 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 placeholder:text-slate-300'
-                    />
-                  </div>
-
-                  {/* 단과대학 */}
-                  <div className='flex items-center gap-4'>
-                    <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>단과대학</label>
-                    <div className='w-2/3 relative'>
-                      <select
-                        value={college}
-                        onChange={(e) => handleCollegeChange(e.target.value)}
-                        aria-label='단과대학 선택'
-                        className={`w-full px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium appearance-none cursor-pointer ${college ? 'text-gray-800' : 'text-slate-300'}`}>
-                        <option value=''>단과대학을 선택해주세요</option>
-                        {Object.keys(COLLEGE_DATA).map((col) => (
-                          <option
-                            key={col}
-                            value={col}>
-                            {col}
-                          </option>
-                        ))}
-                      </select>
-                      <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
-                        <svg
-                          className='w-5 h-5 text-neutral-700'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2.5}
-                            d='M19 9l-7 7-7-7'
-                          />
-                        </svg>
+                  {!isLoading && (
+                    <>
+                      {/* 이름 */}
+                      <div className='flex items-center gap-4'>
+                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>이름</label>
+                        <input
+                          type='text'
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder='이름을 입력해주세요'
+                          className='w-2/3 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 placeholder:text-slate-300'
+                        />
                       </div>
-                    </div>
-                  </div>
 
-                  {/* 학부 */}
-                  <div className='flex items-center gap-4'>
-                    <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>학부</label>
-                    <div className='w-2/3 relative'>
-                      <select
-                        value={department}
-                        onChange={(e) => handleDepartmentChange(e.target.value)}
-                        aria-label='학부 선택'
-                        disabled={!college}
-                        className={`w-full px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
-                          department ? 'text-gray-800' : 'text-slate-300'
-                        }`}>
-                        <option value=''>학부를 선택해주세요</option>
-                        {departments.map((dept) => (
-                          <option
-                            key={dept}
-                            value={dept}>
-                            {dept}
-                          </option>
-                        ))}
-                      </select>
-                      <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
-                        <svg
-                          className='w-5 h-5 text-neutral-700'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2.5}
-                            d='M19 9l-7 7-7-7'
-                          />
-                        </svg>
+                      {/* 학번 */}
+                      <div className='flex items-center gap-4'>
+                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>학번</label>
+                        <input
+                          type='text'
+                          value={studentId}
+                          onChange={(e) => setStudentId(e.target.value)}
+                          placeholder='학번을 입력해주세요 (ex:202512345)'
+                          maxLength={9}
+                          className='w-2/3 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 placeholder:text-slate-300'
+                        />
                       </div>
-                    </div>
-                  </div>
 
-                  {/* 전공 */}
-                  <div className='flex items-center gap-4'>
-                    <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>전공</label>
-                    <div className='w-2/3 relative'>
-                      <select
-                        value={major}
-                        onChange={(e) => setMajor(e.target.value)}
-                        aria-label='전공 선택'
-                        disabled={!department}
-                        className={`w-full px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
-                          major ? 'text-gray-800' : 'text-slate-300'
-                        }`}>
-                        <option value=''>전공을 선택해주세요</option>
-                        {majors.map((maj) => (
-                          <option
-                            key={maj}
-                            value={maj}>
-                            {maj}
-                          </option>
-                        ))}
-                      </select>
-                      <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
-                        <svg
-                          className='w-5 h-5 text-neutral-700'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2.5}
-                            d='M19 9l-7 7-7-7'
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 현재학기 (학년 + 학기) */}
-                  <div className='flex items-center gap-4'>
-                    <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>현재학기</label>
-                    <div className='flex gap-4 items-center'>
-                      <div className='relative shrink-0'>
-                        <select
-                          value={grade}
-                          onChange={(e) => setGrade(Number(e.target.value))}
-                          aria-label='학년 선택'
-                          className='w-16 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 appearance-none cursor-pointer pr-8'>
-                          {GRADES.map((g) => (
-                            <option
-                              key={g}
-                              value={g}>
-                              {g}
-                            </option>
-                          ))}
-                        </select>
-                        <div className='absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none'>
-                          <svg
-                            className='w-4 h-4 text-neutral-700'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'>
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2.5}
-                              d='M19 9l-7 7-7-7'
-                            />
-                          </svg>
+                      {/* 단과대학 */}
+                      <div className='flex items-center gap-4'>
+                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>단과대학</label>
+                        <div className='w-2/3 relative'>
+                          <select
+                            value={college}
+                            onChange={(e) => handleCollegeChange(e.target.value)}
+                            aria-label='단과대학 선택'
+                            className={`w-full px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium appearance-none cursor-pointer ${college ? 'text-gray-800' : 'text-slate-300'}`}>
+                            <option value=''>단과대학을 선택해주세요</option>
+                            {Object.keys(COLLEGE_DATA).map((col) => (
+                              <option
+                                key={col}
+                                value={col}>
+                                {col}
+                              </option>
+                            ))}
+                          </select>
+                          <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
+                            <svg
+                              className='w-5 h-5 text-neutral-700'
+                              fill='none'
+                              stroke='currentColor'
+                              viewBox='0 0 24 24'>
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2.5}
+                                d='M19 9l-7 7-7-7'
+                              />
+                            </svg>
+                          </div>
                         </div>
                       </div>
-                      <span className='text-lg font-semibold text-gray-800'>학년</span>
 
-                      <div className='relative shrink-0'>
-                        <select
-                          value={semester}
-                          onChange={(e) => setSemester(Number(e.target.value))}
-                          aria-label='학기 선택'
-                          className='w-16 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 appearance-none cursor-pointer pr-8'>
-                          {SEMESTERS.map((s) => (
-                            <option
-                              key={s}
-                              value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                        <div className='absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none'>
-                          <svg
-                            className='w-4 h-4 text-neutral-700'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'>
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2.5}
-                              d='M19 9l-7 7-7-7'
-                            />
-                          </svg>
+                      {/* 학부 */}
+                      <div className='flex items-center gap-4'>
+                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>학부</label>
+                        <div className='w-2/3 relative'>
+                          <select
+                            value={department}
+                            onChange={(e) => handleDepartmentChange(e.target.value)}
+                            aria-label='학부 선택'
+                            disabled={!college}
+                            className={`w-full px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                              department ? 'text-gray-800' : 'text-slate-300'
+                            }`}>
+                            <option value=''>학부를 선택해주세요</option>
+                            {departments.map((dept) => (
+                              <option
+                                key={dept}
+                                value={dept}>
+                                {dept}
+                              </option>
+                            ))}
+                          </select>
+                          <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
+                            <svg
+                              className='w-5 h-5 text-neutral-700'
+                              fill='none'
+                              stroke='currentColor'
+                              viewBox='0 0 24 24'>
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2.5}
+                                d='M19 9l-7 7-7-7'
+                              />
+                            </svg>
+                          </div>
                         </div>
                       </div>
-                      <span className='text-lg font-semibold text-gray-800'>학기</span>
-                    </div>
-                  </div>
+
+                      {/* 전공 */}
+                      <div className='flex items-center gap-4'>
+                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>전공</label>
+                        <div className='w-2/3 relative'>
+                          <select
+                            value={major}
+                            onChange={(e) => setMajor(e.target.value)}
+                            aria-label='전공 선택'
+                            disabled={!department}
+                            className={`w-full px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                              major ? 'text-gray-800' : 'text-slate-300'
+                            }`}>
+                            <option value=''>전공을 선택해주세요</option>
+                            {majors.map((maj) => (
+                              <option
+                                key={maj}
+                                value={maj}>
+                                {maj}
+                              </option>
+                            ))}
+                          </select>
+                          <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
+                            <svg
+                              className='w-5 h-5 text-neutral-700'
+                              fill='none'
+                              stroke='currentColor'
+                              viewBox='0 0 24 24'>
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2.5}
+                                d='M19 9l-7 7-7-7'
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 현재학기 (학년 + 학기) */}
+                      <div className='flex items-center gap-4'>
+                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>현재학기</label>
+                        <div className='flex gap-4 items-center'>
+                          <div className='relative shrink-0'>
+                            <select
+                              value={grade}
+                              onChange={(e) => setGrade(Number(e.target.value))}
+                              aria-label='학년 선택'
+                              className='w-16 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 appearance-none cursor-pointer pr-8'>
+                              {GRADES.map((g) => (
+                                <option
+                                  key={g}
+                                  value={g}>
+                                  {g}
+                                </option>
+                              ))}
+                            </select>
+                            <div className='absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none'>
+                              <svg
+                                className='w-4 h-4 text-neutral-700'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'>
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2.5}
+                                  d='M19 9l-7 7-7-7'
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                          <span className='text-lg font-semibold text-gray-800'>학년</span>
+
+                          <div className='relative shrink-0'>
+                            <select
+                              value={semester}
+                              onChange={(e) => setSemester(Number(e.target.value))}
+                              aria-label='학기 선택'
+                              className='w-16 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 appearance-none cursor-pointer pr-8'>
+                              {SEMESTERS.map((s) => (
+                                <option
+                                  key={s}
+                                  value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                            <div className='absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none'>
+                              <svg
+                                className='w-4 h-4 text-neutral-700'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'>
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2.5}
+                                  d='M19 9l-7 7-7-7'
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                          <span className='text-lg font-semibold text-gray-800'>학기</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
