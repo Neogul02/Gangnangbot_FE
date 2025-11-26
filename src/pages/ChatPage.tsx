@@ -11,7 +11,7 @@ import { getMe } from '../services/api/auth'
 import { useUserStore } from '../store/useUserStore'
 
 export default function ChatPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const setUser = useUserStore((state) => state.setUser)
 
   // 페이지 로드 시 사용자 정보 불러오기

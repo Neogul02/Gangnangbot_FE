@@ -2,10 +2,29 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveProfile } from '../../services'
 import { useUserStore } from '../../store/useUserStore'
+import MobileSettingModal from './MobileSettingModal'
 
 interface SettingModalProps {
   isOpen: boolean
   onClose: () => void
+}
+
+// 모바일 화면 체크 커스텀 훅
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  return isMobile
 }
 
 // 학과 데이터 구조
@@ -106,6 +125,19 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
   const departments = Object.keys((COLLEGE_DATA as Record<string, Record<string, string[]>>)[college] || {})
   const majors = (COLLEGE_DATA as Record<string, Record<string, string[]>>)[college]?.[department] || []
 
+  const isMobile = useIsMobile()
+
+  // 모바일에서는 MobileSettingModal 렌더링
+  if (isMobile) {
+    return (
+      <MobileSettingModal
+        isOpen={isOpen}
+        onClose={onClose}
+      />
+    )
+  }
+
+  // 데스크톱에서는 기존 모달 렌더링
   return (
     <AnimatePresence>
       {isOpen && (
@@ -116,7 +148,7 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className='fixed inset-0 bg-black/10 backdrop-blur-sm z-50'
+            className='fixed inset-0 bg-black/30 backdrop-blur-sm z-50'
           />
 
           {/* 모달 */}
