@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQueryClient } from '@tanstack/react-query'
-import main_logo from '../../assets/main_logo.png'
+import response_logo from '../../assets/response_logo.png'
 import { useSessionStore } from '../../store/useSessionStore'
 import { createSession, sendMessage, getSessionMessages } from '../../services'
 import { queryKeys } from '../../services/hooks'
@@ -214,7 +214,7 @@ export default function ChatArea() {
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim() || isLoading}
                     aria-label='메시지 전송'
-                    className='shrink-0 w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center transition-colors'>
+                    className='cursor-pointer shrink-0 w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 hover:scale-110 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center transition-all'>
                     <svg
                       xmlns='http://www.w3.org/2000/svg'
                       viewBox='0 0 24 24'
@@ -233,7 +233,7 @@ export default function ChatArea() {
                   <button
                     key={index}
                     onClick={() => handleExampleClick(question)}
-                    className='cursor-pointer px-6 py-3 rounded-full border border-white/30 shadow-lg hover:shadow-xl transition-all text-gray-700 text-sm md:text-base'
+                    className='cursor-pointer px-6 py-3 rounded-full border border-white/30 shadow-lg hover:shadow-xl hover:scale-105 transition-all text-gray-700 text-sm md:text-base'
                     style={{
                       backgroundColor: 'rgba(255, 255, 255, 0.3)',
                       backdropFilter: 'blur(23px)',
@@ -262,7 +262,7 @@ export default function ChatArea() {
                   {message.type === 'ai' && (
                     <div className='shrink-0 w-10 h-10 rounded-full overflow-hidden'>
                       <img
-                        src={main_logo}
+                        src={response_logo}
                         alt='AI Profile'
                         className='w-full h-full object-cover'
                       />
@@ -271,7 +271,7 @@ export default function ChatArea() {
 
                   {/* 메시지 버블 */}
                   <div
-                    className={`max-w-[70%] px-4 py-3 rounded-2xl shadow-lg ${message.type === 'user' ? 'bg-blue-500 text-white' : 'border border-white/30'}`}
+                    className={`max-w-[70%] px-4 py-3 shadow-lg ${message.type === 'user' ? 'bg-[#2C3137] text-white rounded-tl-3xl rounded-tr-md rounded-bl-3xl rounded-br-3xl' : 'border border-white/30 rounded-2xl'}`}
                     style={
                       message.type === 'ai'
                         ? {
@@ -294,7 +294,7 @@ export default function ChatArea() {
                   className='flex gap-3'>
                   <div className='shrink-0 w-10 h-10 rounded-full overflow-hidden'>
                     <img
-                      src={main_logo}
+                      src={response_logo}
                       alt='AI Profile'
                       className='w-full h-full object-cover'
                     />
@@ -322,7 +322,7 @@ export default function ChatArea() {
                   className='flex gap-3'>
                   <div className='shrink-0 w-10 h-10 rounded-full overflow-hidden'>
                     <img
-                      src={main_logo}
+                      src={response_logo}
                       alt='AI Profile'
                       className='w-full h-full object-cover'
                     />
@@ -372,23 +372,25 @@ export default function ChatArea() {
           }}>
           <div className='max-w-4xl mx-auto'>
             {/* 새 채팅 시작 버튼 */}
-            <button
-              onClick={() => setCurrentSessionId(undefined)}
-              className='w-full mb-3 px-4 py-2.5 bg-white/50 hover:bg-white/70 text-gray-700 rounded-2xl transition-all flex items-center justify-center gap-2 font-medium border border-white/30 shadow-md'>
-              <svg
-                className='w-4 h-4'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M12 4v16m8-8H4'
-                />
-              </svg>
-              새 대화 시작하기
-            </button>
+            <div className='flex justify-center mb-3'>
+              <button
+                onClick={() => setCurrentSessionId(undefined)}
+                className='cursor-pointer px-4 py-2.5 bg-white/50 hover:bg-white/70 hover:scale-105 text-sub rounded-4xl transition-all flex items-center justify-center gap-2 font-medium border border-white/30 shadow-md'>
+                <svg
+                  className='w-4 h-4'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 4v16m8-8H4'
+                  />
+                </svg>
+                새 대화 시작하기
+              </button>
+            </div>
 
             <div
               className='w-full rounded-4xl p-3 border border-white/30 shadow-xl'
@@ -411,7 +413,7 @@ export default function ChatArea() {
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isLoading}
                   aria-label='메시지 전송'
-                  className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                  className={`cursor-pointer shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 disabled:hover:scale-100 ${
                     inputValue.trim()
                       ? 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#4E92FF_0%,_rgba(78,_146,_255,_0.50)_100%)]'
                       : 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#B2D0FF_0%,_rgba(178,_208,_255,_0.50)_70%,_rgba(178,_208,_255,_0)_100%)]'

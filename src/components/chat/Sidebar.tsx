@@ -20,11 +20,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       className='relative h-full overflow-hidden hidden lg:block'>
       {/* iOS Style Liquid Glass Background */}
       <div
-        className='absolute inset-0 border-r border-white/30 shadow-2xl'
+        className='absolute inset-0 border-r border-white/30 shadow-2xl bg-white/5 lg:bg-white/30'
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-          backdropFilter: 'blur(23px)',
-          WebkitBackdropFilter: 'blur(23px)',
+          backdropFilter: 'blur(15px)',
+          WebkitBackdropFilter: 'blur(15px)',
         }}
       />
 

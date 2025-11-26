@@ -120,13 +120,26 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
               continue
             }
 
-            // parts 배열에서 text만 추출 (function_call, function_response 제외)
+            // parts 배열에서 text만 추출
             let textContent = ''
             if (data.parts && Array.isArray(data.parts)) {
-              textContent = data.parts
-                .filter((part: { text?: string; function_call?: unknown; function_response?: unknown }) => part.text && !part.function_call && !part.function_response)
-                .map((part: { text?: string }) => part.text || '')
-                .join('')
+              for (const part of data.parts) {
+                // parts 배열의 각 항목이 또 다른 객체를 포함하는 경우
+                if (typeof part === 'object' && part !== null) {
+                  // 'text' 키를 가진 경우 직접 추출
+                  if ('text' in part && typeof part.text === 'string') {
+                    textContent += part.text
+                  }
+                  // 'parts' 배열을 가진 중첩 구조인 경우
+                  else if ('parts' in part && Array.isArray(part.parts)) {
+                    for (const nestedPart of part.parts) {
+                      if (nestedPart && typeof nestedPart === 'object' && 'text' in nestedPart) {
+                        textContent += nestedPart.text
+                      }
+                    }
+                  }
+                }
+              }
             }
 
             // 텍스트가 없으면 스킵

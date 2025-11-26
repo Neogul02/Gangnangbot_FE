@@ -12,9 +12,9 @@ export default function SidebarToggleButton({ isOpen, onClick, isMobile = false 
         onClick={onClick}
         className='fixed top-4 left-4 z-50 p-3 rounded-full shadow-lg cursor-pointer transition-all hover:scale-110'
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-          backdropFilter: 'blur(23px)',
-          WebkitBackdropFilter: 'blur(23px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(15px)',
+          WebkitBackdropFilter: 'blur(15px)',
         }}
         aria-label='사이드바 열기'>
         <svg
