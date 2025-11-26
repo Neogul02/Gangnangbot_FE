@@ -26,6 +26,7 @@ export default function ChatArea() {
   const [isNewSession, setIsNewSession] = useState(false) // 새 세션 생성 플래그
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const fullAIResponseRef = useRef<string>('') // AI 응답 누적용 ref
 
   const queryClient = useQueryClient()
   const { currentSessionId, setCurrentSessionId } = useSessionStore()
@@ -118,7 +119,7 @@ export default function ChatArea() {
 
       // 메시지 전송
       console.log('📤 메시지 전송 중...')
-      let fullAIResponse = ''
+      fullAIResponseRef.current = '' // ref 초기화
 
       await sendMessage(
         { session_id: sessionId, message: userMessageContent },
@@ -127,18 +128,18 @@ export default function ChatArea() {
 
           // text 필드가 있으면 누적해서 표시
           if (chunk.text) {
-            fullAIResponse += chunk.text // 누적!
+            fullAIResponseRef.current += chunk.text // ref에 누적
             console.log('📝 텍스트 누적:', {
               chunkLength: chunk.text.length,
-              totalLength: fullAIResponse.length,
+              totalLength: fullAIResponseRef.current.length,
               done: chunk.done,
             })
-            setStreamingContent(fullAIResponse) // 누적된 전체 텍스트 표시
+            setStreamingContent(fullAIResponseRef.current) // 누적된 전체 텍스트 표시
           }
 
           // done 신호면 스트리밍 종료
           if (chunk.done) {
-            console.log('✅ 스트리밍 완료 신호 수신, 최종 길이:', fullAIResponse.length)
+            console.log('✅ 스트리밍 완료 신호 수신, 최종 길이:', fullAIResponseRef.current.length)
           }
         },
         (error) => {
@@ -159,11 +160,11 @@ export default function ChatArea() {
 
       // 스트리밍 완료 후 처리
       console.log('✅ 메시지 전송 완료')
-      console.log('📊 fullAIResponse 길이:', fullAIResponse.length)
-      console.log('📊 fullAIResponse 내용:', fullAIResponse.substring(0, 100))
+      console.log('📊 fullAIResponse 길이:', fullAIResponseRef.current.length)
+      console.log('📊 fullAIResponse 내용:', fullAIResponseRef.current.substring(0, 100))
 
       // fullAIResponse가 비어있으면 에러 처리
-      if (!fullAIResponse) {
+      if (!fullAIResponseRef.current) {
         console.error('❌ fullAIResponse가 비어있음!')
         setIsLoading(false)
         setStreamingContent('')
@@ -181,7 +182,7 @@ export default function ChatArea() {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        content: fullAIResponse,
+        content: fullAIResponseRef.current,
         timestamp: new Date(),
       }
       console.log('💾 메시지 목록에 추가:', aiMessage)
