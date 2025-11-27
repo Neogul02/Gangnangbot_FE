@@ -40,6 +40,8 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
   const [semester, setSemester] = useState(1)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   // 모달이 열릴 때 프로필 로드
   useEffect(() => {
@@ -100,14 +102,17 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
   }
 
   const handleSave = async () => {
+    setErrorMessage('')
+    setSuccessMessage('')
+
     if (!user?.id || !name || !studentId) {
-      alert('이름과 학번을 입력해주세요.')
+      setErrorMessage('이름과 학번을 입력해주세요')
       return
     }
 
     // 학번 형식 검증 (9자리 숫자)
     if (!/^\d{9}$/.test(studentId)) {
-      alert('학번은 9자리 숫자로 입력해주세요. (예: 202512345)')
+      setErrorMessage('학번은 9자리 숫자로 입력해주세요. (예: 202512345)')
       return
     }
 
@@ -123,11 +128,13 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
         current_grade: grade,
         current_semester: semester,
       })
-      alert('프로필이 저장되었습니다!')
-      onClose()
+      setSuccessMessage('저장되었습니다!')
+      setTimeout(() => {
+        onClose()
+      }, 1500)
     } catch (error) {
       console.error('프로필 저장 실패:', error)
-      alert('프로필 저장에 실패했습니다. 다시 시도해주세요.')
+      setErrorMessage('프로필 저장에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsSaving(false)
     }
@@ -229,16 +236,27 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
                       </div>
 
                       {/* 학번 */}
-                      <div className='flex items-center gap-4'>
-                        <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>학번</label>
-                        <input
-                          type='text'
-                          value={studentId}
-                          onChange={(e) => setStudentId(e.target.value)}
-                          placeholder='학번을 입력해주세요 (ex:202512345)'
-                          maxLength={9}
-                          className='w-2/3 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 placeholder:text-slate-300'
-                        />
+                      <div>
+                        <div className='flex items-center gap-4'>
+                          <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>학번</label>
+                          <input
+                            type='text'
+                            value={studentId}
+                            onChange={(e) => {
+                              setStudentId(e.target.value)
+                              setErrorMessage('')
+                            }}
+                            placeholder='학번을 입력해주세요 (ex:202512345)'
+                            maxLength={9}
+                            className='w-2/3 px-3 py-3 bg-white/70 rounded-xl border-none focus:outline-none text-lg font-medium text-gray-800 placeholder:text-slate-300'
+                          />
+                        </div>
+                        {errorMessage && (
+                          <div className='flex items-center gap-4 mt-1'>
+                            <div className='w-20 shrink-0' />
+                            <p className='text-sm text-red-500'>{errorMessage}</p>
+                          </div>
+                        )}
                       </div>
 
                       {/* 단과대학 */}
@@ -425,7 +443,8 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
               </div>
 
               {/* 저장 버튼 */}
-              <div className='flex justify-end mt-6'>
+              <div className='flex justify-end items-center gap-3 mt-6'>
+                {successMessage && <p className='text-sm text-blue-500 font-medium'>{successMessage}</p>}
                 <button
                   onClick={handleSave}
                   disabled={isSaving}

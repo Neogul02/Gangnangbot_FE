@@ -22,6 +22,8 @@ export default function MobileSettingModal({ isOpen, onClose }: MobileSettingMod
   const [semester, setSemester] = useState(1)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   // 모달이 열릴 때 프로필 로드
   useEffect(() => {
@@ -82,14 +84,17 @@ export default function MobileSettingModal({ isOpen, onClose }: MobileSettingMod
   }
 
   const handleSave = async () => {
+    setErrorMessage('')
+    setSuccessMessage('')
+
     if (!user?.id || !name || !studentId) {
-      alert('이름과 학번을 입력해주세요.')
+      setErrorMessage('이름과 학번을 입력해주세요')
       return
     }
 
     // 학번 형식 검증 (9자리 숫자)
     if (!/^\d{9}$/.test(studentId)) {
-      alert('학번은 9자리 숫자로 입력해주세요. (예: 202512345)')
+      setErrorMessage('학번은 9자리 숫자로 입력해주세요 (예: 202512345)')
       return
     }
 
@@ -105,11 +110,13 @@ export default function MobileSettingModal({ isOpen, onClose }: MobileSettingMod
         current_grade: grade,
         current_semester: semester,
       })
-      alert('프로필이 저장되었습니다!')
-      onClose()
+      setSuccessMessage('저장되었습니다')
+      setTimeout(() => {
+        onClose()
+      }, 1500)
     } catch (error) {
       console.error('프로필 저장 실패:', error)
-      alert('프로필 저장에 실패했습니다. 다시 시도해주세요.')
+      setErrorMessage('프로필 저장에 실패했습니다, 다시 시도해주세요')
     } finally {
       setIsSaving(false)
     }
@@ -189,11 +196,15 @@ export default function MobileSettingModal({ isOpen, onClose }: MobileSettingMod
                     <input
                       type='text'
                       value={studentId}
-                      onChange={(e) => setStudentId(e.target.value)}
+                      onChange={(e) => {
+                        setStudentId(e.target.value)
+                        setErrorMessage('')
+                      }}
                       placeholder='학번을 입력해주세요 (ex:202512345)'
                       maxLength={9}
                       className='w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-blue-400 focus:outline-none text-base font-medium text-gray-800 placeholder:text-gray-400'
                     />
+                    {errorMessage && <p className='text-sm text-red-500 mt-1'>{errorMessage}</p>}
                   </div>
 
                   {/* 단과대학 */}
@@ -378,12 +389,15 @@ export default function MobileSettingModal({ isOpen, onClose }: MobileSettingMod
               )}
 
               {/* 저장 버튼 */}
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className='w-full mt-6 px-6 py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-semibold rounded-full transition-colors disabled:cursor-not-allowed text-base'>
-                {isSaving ? '저장 중...' : '저장'}
-              </button>
+              <div className='mt-6'>
+                {successMessage && <p className='text-sm text-blue-500 font-medium text-center mb-2'>{successMessage}</p>}
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className='w-full px-6 py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-semibold rounded-full transition-colors disabled:cursor-not-allowed text-base'>
+                  {isSaving ? '저장 중...' : '저장'}
+                </button>
+              </div>
 
               {/* 안전 영역 (모바일 하단 여백) */}
               <div className='h-4' />
