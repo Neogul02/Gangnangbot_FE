@@ -16,7 +16,7 @@ interface Message {
   timestamp: Date
 }
 
-const EXAMPLE_QUESTIONS = ['오늘 급식 뭐야?', '홍길동 교수님 수업 알려줘', '교학2팀이 어디야?']
+const EXAMPLE_QUESTIONS = ['이공관이 어디야?', '20학번 소프트웨어학과 졸업요건 알려줘', '교학2팀이 어디야?']
 
 export default function ChatArea() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -520,12 +520,7 @@ export default function ChatArea() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className='border-t border-white/20 p-4 md:p-6'
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(23px)',
-            WebkitBackdropFilter: 'blur(23px)',
-          }}>
+          className='p-4 md:p-6'>
           <div className='max-w-4xl mx-auto'>
             {/* 새 채팅 시작 버튼 */}
             <div className='flex justify-center mb-3'>
