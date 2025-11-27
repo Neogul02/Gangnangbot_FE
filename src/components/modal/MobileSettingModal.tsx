@@ -3,35 +3,12 @@ import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveProfile, getProfile } from '../../services'
 import { useUserStore } from '../../store/useUserStore'
+import { COLLEGE_DATA, GRADES, SEMESTERS } from '../../constants/collegeData'
 
 interface MobileSettingModalProps {
   isOpen: boolean
   onClose: () => void
 }
-
-// 학과 데이터 구조
-const COLLEGE_DATA = {
-  공과대학: {
-    컴퓨터공학부: ['소프트웨어전공', '메타버스게임전공'],
-    인공지능융합공학부: ['인공지능전공', '데이터사이언스전공'],
-    전자반도체공학부: ['전자공학전공', '반도체공학전공', '스마트모빌리티전공'],
-    부동산건설학부: ['부동산학전공', '스마트도시공학전공', '건축공학전공'],
-  },
-  예체능대학: {
-    디자인학과: ['디자인학과'],
-    체육학과: ['체육학과'],
-    음악학과: ['음악학과'],
-  },
-  사범대학: {
-    교육학과: ['교육학과'],
-    유아교육과: ['유아교육과'],
-    초등특수교육과: ['초등특수교육과'],
-    중등특수교육과: ['중등특수교육과'],
-  },
-}
-
-const GRADES = [1, 2, 3, 4]
-const SEMESTERS = [1, 2]
 
 export default function MobileSettingModal({ isOpen, onClose }: MobileSettingModalProps) {
   const user = useUserStore((state) => state.user)
@@ -185,10 +162,14 @@ export default function MobileSettingModal({ isOpen, onClose }: MobileSettingMod
               </div>
 
               {/* 로딩 상태 */}
-              {isLoading && <div className='text-center py-8 text-gray-500'>프로필 로딩 중...</div>}
-
-              {/* 폼 */}
-              {!isLoading && (
+              {isLoading ? (
+                <div className='flex items-center justify-center py-32 text-gray-500'>
+                  <div className='flex flex-col items-center gap-3'>
+                    <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500'></div>
+                    <div>프로필 로딩 중...</div>
+                  </div>
+                </div>
+              ) : (
                 <div className='space-y-4'>
                   {/* 이름 */}
                   <div>

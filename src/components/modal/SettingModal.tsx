@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { saveProfile, getProfile } from '../../services'
 import { useUserStore } from '../../store/useUserStore'
 import MobileSettingModal from './MobileSettingModal'
+import { COLLEGE_DATA, GRADES, SEMESTERS } from '../../constants/collegeData'
 
 interface SettingModalProps {
   isOpen: boolean
@@ -26,47 +27,6 @@ function useIsMobile() {
 
   return isMobile
 }
-
-// 학과 데이터 구조
-const COLLEGE_DATA = {
-  자유전공학부: { 자유전공학부: ['자유전공학부'] },
-  복지융합대학: { 
-    사회복지학부: ['사회복지학전공', '사회서비스학전공', '노인복지전공'], 
-    '사회복지학부(야)': ['사회복지학전공(야)'],
-    시니어비즈니스학과: ['시니어비즈니스학과']
-  },
-  경영관리대학:{
-    상경학부:['경영학전공','경제금융학전공','국제무역학전공'],
-    '상경학부(야)':['경영학전공(야)','경제금융학전공(야)'],
-    법행정세무학부:['세무학전공','법행정학전공'],
-  },
-  글로벌문화콘텐츠대학:{
-    문화콘텐츠학과:['문화콘텐츠학과'],
-    국제지역학과:['국제지역학과'],
-    중국콘텐츠비즈니스학과:['중국콘텐츠비즈니스학과'],
-    한국어문학과:['한국어문학과'],
-  },
-  공과대학: {
-    컴퓨터공학부: ['소프트웨어전공', '메타버스게임전공'],
-    인공지능융합공학부: ['인공지능전공', '데이터사이언스전공'],
-    전자반도체공학부: ['전자공학전공', '반도체공학전공', '스마트모빌리티전공'],
-    부동산건설학부: ['부동산학전공', '스마트도시공학전공', '건축공학전공'],
-  },
-  예체능대학: {
-    디자인학과: ['디자인학과'],
-    체육학과: ['체육학과'],
-    음악학과: ['음악학과'],
-  },
-  사범대학: {
-    교육학과: ['교육학과'],
-    유아교육과: ['유아교육과'],
-    초등특수교육과: ['초등특수교육과'],
-    중등특수교육과: ['중등특수교육과'],
-  },
-}
-
-const GRADES = [1, 2, 3, 4]
-const SEMESTERS = [1, 2]
 
 export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
   const user = useUserStore((state) => state.user)
@@ -246,11 +206,16 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
                 <div className='w-0.5 bg-slate-300 shrink-0' />
 
                 {/* 오른쪽: 폼 */}
-                <div className='flex-1 space-y-4'>
-                  {isLoading && <div className='text-center py-8 text-gray-500'>프로필 로딩 중...</div>}
-
-                  {!isLoading && (
-                    <>
+                <div className='flex-1 min-h-[520px]'>
+                  {isLoading ? (
+                    <div className='flex items-center justify-center h-full text-gray-500'>
+                      <div className='flex flex-col items-center gap-3'>
+                        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500'></div>
+                        <div>프로필 로딩 중...</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='space-y-4'>
                       {/* 이름 */}
                       <div className='flex items-center gap-4'>
                         <label className='w-20 text-lg font-normal text-gray-800 shrink-0'>이름</label>
@@ -454,7 +419,7 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
                           <span className='text-lg font-semibold text-gray-800'>학기</span>
                         </div>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
