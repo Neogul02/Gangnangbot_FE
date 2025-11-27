@@ -8,6 +8,7 @@ import response_logo from '../../assets/response_logo.png'
 import { useSessionStore } from '../../store/useSessionStore'
 import { createSession, sendMessage, getSessionMessages } from '../../services'
 import { queryKeys } from '../../services/hooks'
+import TypingText from './TypingText'
 
 interface Message {
   id: string
@@ -16,7 +17,9 @@ interface Message {
   timestamp: Date
 }
 
-const EXAMPLE_QUESTIONS = ['이공관이 어디야?', '20학번 소프트웨어학과 졸업요건 알려줘', '교학2팀이 어디야?']
+const EXAMPLE_QUESTIONS = ['이공관이 어디야?', '20학번 소프트웨어학과 졸업요건 알려줘', '홍길동 교수님 연락처 알려줘']
+
+const TYPING_TEXTS = ['안녕, 난 강남대학교 AI 강냉봇이야', '궁금한 게 있으면 편하게 질문해줘', '교수님 연락처, 과목 정보, 졸업 요건 등 무엇이든 물어봐']
 
 export default function ChatArea() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -262,8 +265,14 @@ export default function ChatArea() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
               className='h-full flex flex-col items-center justify-center gap-8 max-w-3xl mx-auto'>
-              {/* 환영 메시지 */}
-              <h1 className='text-2xl md:text-3xl font-semibold text-gray-800 text-center'>안녕, 난 강남대학교 AI 강냉봇이야</h1>
+              {/* 환영 메시지 - 타이핑 효과 */}
+              <TypingText
+                texts={TYPING_TEXTS}
+                typingSpeed={80}
+                deletingSpeed={40}
+                pauseDuration={2500}
+                className='text-2xl md:text-3xl font-semibold text-gray-800 text-center min-h-10 md:min-h-12'
+              />
 
               {/* 입력창 */}
               <div
