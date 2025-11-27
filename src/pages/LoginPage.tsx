@@ -1,15 +1,15 @@
-import { useNavigate } from 'react-router-dom'
+// import { useNavigate } from 'react-router-dom'
 import Background from '../components/Background'
 import GoogleLoginButton from '../components/auth/GoogleLoginButton'
 import main_logo from '../assets/main_logo.png'
 
 export default function LoginPage() {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
-  const handleTestLogin = () => {
-    // 테스트 로그인 - 바로 채팅 페이지로 이동
-    navigate('/chat')
-  }
+  // const handleTestLogin = () => {
+  //   // 테스트 로그인 - 바로 채팅 페이지로 이동
+  //   navigate('/chat')
+  // }
 
   return (
     <div className='min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 lg:px-8'>
