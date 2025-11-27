@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import main_logo from '../../assets/main_logo.png'
+import text_logo from '../../assets/text_logo.png'
 import SidebarToggleButton from './SidebarToggleButton'
 import SessionList from './SessionList'
 import ProfileSection from './ProfileSection'
@@ -34,11 +35,16 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.25, delay: 0.05, ease: 'easeInOut' }}
           className='relative h-full flex flex-col p-6'>
-          <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center justify-between mb-6 ml-2'>
             <img
               src={main_logo}
               alt='Main Logo'
               className='w-10 h-auto'
+            />
+            <img
+              src={text_logo}
+              alt='Text Logo'
+              className='-ml-25'
             />
             <SidebarToggleButton
               isOpen={isOpen}

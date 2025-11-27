@@ -7,6 +7,7 @@ import SidebarToggleButton from '../components/chat/SidebarToggleButton'
 import SessionList from '../components/chat/SessionList'
 import ProfileSection from '../components/chat/ProfileSection'
 import main_logo from '../assets/main_logo.png'
+import text_logo from '../assets/text_logo.png'
 import { getMe } from '../services/api/auth'
 import { useUserStore } from '../store/useUserStore'
 
@@ -88,11 +89,16 @@ export default function ChatPage() {
                   WebkitBackdropFilter: 'blur(23px)',
                 }}>
                 <div className='relative h-full flex flex-col p-4'>
-                  <div className='flex items-center justify-between mb-6'>
+                  <div className='flex items-center justify-between mb-6 ml-2'>
                     <img
                       src={main_logo}
                       alt='Main Logo'
                       className='w-10 h-auto'
+                    />
+                    <img
+                      src={text_logo}
+                      alt='Text Logo'
+                      className='-ml-25'
                     />
                     <SidebarToggleButton
                       isOpen={true}
