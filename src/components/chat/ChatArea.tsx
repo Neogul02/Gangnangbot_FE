@@ -31,7 +31,7 @@ export default function ChatArea() {
   const queryClient = useQueryClient()
   const { currentSessionId, setCurrentSessionId } = useSessionStore()
 
-  const hasMessages = messages.length > 0
+  const hasMessages = messages.length > 0 || isLoading
 
   // 메시지 전송 시 스크롤 하단으로
   useEffect(() => {
@@ -260,7 +260,7 @@ export default function ChatArea() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.2 }}
               className='h-full flex flex-col items-center justify-center gap-8 max-w-3xl mx-auto'>
               {/* 환영 메시지 */}
               <h1 className='text-2xl md:text-3xl font-semibold text-gray-800 text-center'>안녕, 난 강남대학교 AI 강냉봇이야</h1>
