@@ -120,21 +120,29 @@ export default function ChatArea() {
       // 메시지 전송
       console.log('📤 메시지 전송 중...')
       fullAIResponseRef.current = '' // ref 초기화
+      console.log('🔄 fullAIResponseRef 초기화 완료')
 
       await sendMessage(
         { session_id: sessionId, message: userMessageContent },
         (chunk) => {
-          console.log('📦 청크 수신:', chunk)
+          console.log('🎯 ChatArea - 청크 수신 콜백 호출됨!', chunk)
 
           // text 필드가 있으면 누적해서 표시
           if (chunk.text) {
+            const beforeLength = fullAIResponseRef.current.length
             fullAIResponseRef.current += chunk.text // ref에 누적
+            const afterLength = fullAIResponseRef.current.length
             console.log('📝 텍스트 누적:', {
+              chunkText: chunk.text.substring(0, 50),
               chunkLength: chunk.text.length,
-              totalLength: fullAIResponseRef.current.length,
+              beforeLength,
+              afterLength,
               done: chunk.done,
             })
             setStreamingContent(fullAIResponseRef.current) // 누적된 전체 텍스트 표시
+            console.log('✅ setStreamingContent 호출 완료, 길이:', fullAIResponseRef.current.length)
+          } else {
+            console.log('⚠️ chunk.text가 없음!')
           }
 
           // done 신호면 스트리밍 종료

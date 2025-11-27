@@ -130,15 +130,43 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
       const lines = chunk.split('\n')
 
       for (const line of lines) {
+        // 빈 줄 건너뛰기
+        if (!line.trim()) continue
+
+        let jsonData: unknown
+        let parseSuccess = false
+
+        // 1. SSE 표준 형식: "data: {...}"
         if (line.startsWith('data: ')) {
           try {
-            const data = JSON.parse(line.slice(6))
-            console.log('🔍 SSE 데이터 파싱:', data)
+            jsonData = JSON.parse(line.slice(6))
+            parseSuccess = true
+            console.log('🔍 SSE 표준 형식 파싱:', jsonData)
+          } catch (e) {
+            console.warn('SSE 표준 형식 파싱 실패:', e)
+          }
+        }
+
+        // 2. JSON만 있는 형식: "{...}"
+        if (!parseSuccess && (line.startsWith('{') || line.startsWith('['))) {
+          try {
+            jsonData = JSON.parse(line)
+            parseSuccess = true
+            console.log('🔍 순수 JSON 형식 파싱:', jsonData)
+          } catch (e) {
+            console.warn('JSON 파싱 실패:', e)
+          }
+        }
+
+        if (parseSuccess && jsonData) {
+          try {
+            const data = jsonData as Record<string, unknown>
+            console.log('🔍 데이터 처리 시작:', data)
 
             // 1. 텍스트 응답 처리 (text 필드만 있어도 처리)
-            if ('text' in data) {
-              const isDone = 'done' in data ? data.done : false
-              console.log('✅ text 형식 감지:', { textLength: data.text?.length, done: isDone })
+            if ('text' in data && typeof data.text === 'string') {
+              const isDone = 'done' in data ? Boolean(data.done) : false
+              console.log('✅ text 형식 감지:', { textLength: data.text.length, done: isDone })
 
               // 텍스트가 있으면 전달
               if (data.text) {
@@ -205,7 +233,8 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
             // 3. 에러 처리
             if (data.error) {
               if (onError) {
-                onError(new Error(data.text || '알 수 없는 오류가 발생했습니다'))
+                const errorMsg = typeof data.text === 'string' ? data.text : '알 수 없는 오류가 발생했습니다'
+                onError(new Error(errorMsg))
               }
             }
           } catch (e) {
