@@ -43,7 +43,7 @@ export default function AuthCallbackPage() {
         console.log('✅ 토큰 저장 완료')
 
         setStatus('success')
-        setMessage('로그인 성공! 리다이렉트 중...')
+        setMessage('로그인에 성공했어요')
 
         setTimeout(() => {
           if (from === 'api-test') {
@@ -58,7 +58,7 @@ export default function AuthCallbackPage() {
       // 백엔드가 code만 보내준 경우 - 현재 백엔드가 토큰 교환을 완료하지 않은 상태
       if (code && state) {
         setStatus('error')
-        setMessage('백엔드 OAuth 설정이 완료되지 않았습니다. Google 인증은 성공했지만, 백엔드가 JWT 토큰을 프론트엔드에 전달하지 않았습니다. 테스트를 위해 "토큰 생성" 버튼을 사용하세요.')
+        setMessage('백엔드 OAuth 설정이 완료되지 않았습니다. Google 인증은 성공했지만, 백엔드가 JWT 토큰을 프론트엔드에 전달하지 않았습니다. ')
         setTimeout(() => {
           if (from === 'api-test') {
             navigate('/api-test')
