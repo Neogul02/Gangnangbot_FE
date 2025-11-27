@@ -166,8 +166,8 @@ export async function streamSSE(endpoint: string, data: unknown, onMessage: (mes
                 reader.cancel()
                 break
               }
-              
-              // done 필드가 없으면 스트림 계속 (서버가 done을 안 보낼 수 있음)
+
+              // done 필드가 없어도 계속 처리
               continue
             }
 

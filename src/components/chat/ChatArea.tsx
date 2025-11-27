@@ -147,6 +147,20 @@ export default function ChatArea() {
           setStreamingContent('')
           setIsLoading(false)
 
+          // ref에 내용이 있으면 그것을 사용
+          if (fullAIResponseRef.current) {
+            console.log('⚠️ 에러지만 응답 내용 있음, 메시지로 저장')
+            const aiMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              type: 'ai',
+              content: fullAIResponseRef.current,
+              timestamp: new Date(),
+            }
+            setMessages((prev) => [...prev, aiMessage])
+            fullAIResponseRef.current = ''
+            return
+          }
+
           // 에러 메시지 표시
           const errorMessage: Message = {
             id: (Date.now() + 1).toString(),
@@ -162,6 +176,9 @@ export default function ChatArea() {
       console.log('✅ 메시지 전송 완료')
       console.log('📊 fullAIResponse 길이:', fullAIResponseRef.current.length)
       console.log('📊 fullAIResponse 내용:', fullAIResponseRef.current.substring(0, 100))
+
+      // 짧은 대기 후 최종 확인 (스트리밍이 완전히 끝날 때까지)
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // fullAIResponse가 비어있으면 에러 처리
       if (!fullAIResponseRef.current) {
@@ -189,6 +206,7 @@ export default function ChatArea() {
       setMessages((prev) => [...prev, aiMessage])
       setStreamingContent('')
       setIsLoading(false)
+      fullAIResponseRef.current = '' // ref 초기화
 
       // 메시지 전송 완료 후 세션 목록 갱신 (제목이 업데이트될 수 있음)
       queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
