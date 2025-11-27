@@ -37,12 +37,12 @@ export default function LoginPage() {
             <GoogleLoginButton />
 
             {/* Divider */}
-            <div className='relative flex items-center py-2'>
+            {/* <div className='relative flex items-center py-2'>
               <div className='grow border-t border-gray-300'></div>
-            </div>
+            </div> */}
 
             {/* Test Login Button */}
-            <button
+            {/* <button
               onClick={handleTestLogin}
               className='cursor-pointer w-full flex items-center justify-center px-4 py-3 border border-main rounded-lg shadow-sm text-sm font-medium text-main bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main transition-colors'>
               TEST Login
@@ -51,7 +51,7 @@ export default function LoginPage() {
               onClick={() => navigate('/api-test')}
               className='cursor-pointer w-full flex items-center justify-center px-4 py-3 border border-main rounded-lg shadow-sm text-sm font-medium text-main bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main transition-colors'>
               API_TEST
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
