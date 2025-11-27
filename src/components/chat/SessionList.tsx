@@ -4,6 +4,7 @@ import { listSessions, deleteSession } from '../../services/api/session'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSessionStore } from '../../store/useSessionStore'
 import DeleteModal from '../modal/DeleteModal'
+import type { Session } from '../../services/api/types'
 
 export default function SessionList() {
   const queryClient = useQueryClient()
@@ -17,6 +18,7 @@ export default function SessionList() {
   const {
     data: sessionsData,
     isLoading: loading,
+    isFetching,
     error,
     refetch,
   } = useQuery({
@@ -73,24 +75,45 @@ export default function SessionList() {
   }
 
   const handleDeleteAll = async () => {
+    // 1. 즉시 UI 업데이트 (Optimistic Update)
+    const previousSessions = queryClient.getQueryData(['sessions'])
+    queryClient.setQueryData(['sessions'], [])
+    setCurrentSessionId(undefined)
+    setIsMenuOpen(false)
+
+    // 2. 백그라운드에서 API 요청
     try {
       await Promise.all(sessions.map((session) => deleteMutation.mutateAsync(session.sid)))
-      setCurrentSessionId(undefined)
-      setIsMenuOpen(false)
     } catch (err) {
       console.error('Failed to delete all sessions:', err)
+      // 실패 시 이전 상태로 복구
+      queryClient.setQueryData(['sessions'], previousSessions)
       alert('세션 삭제에 실패했습니다.')
     }
   }
 
   const handleDeleteSingle = async (sessionId: string) => {
+    // 1. 즉시 UI 업데이트 (Optimistic Update)
+    const previousSessions = queryClient.getQueryData(['sessions'])
+    queryClient.setQueryData<Session[]>(['sessions'], (old) => {
+      if (!old) return old
+      return old.filter((session) => session.sid !== sessionId)
+    })
+
+    if (currentSessionId === sessionId) {
+      setCurrentSessionId(undefined)
+    }
+
+    // 2. 백그라운드에서 API 요청
     try {
       await deleteMutation.mutateAsync(sessionId)
-      if (currentSessionId === sessionId) {
-        setCurrentSessionId(undefined)
-      }
     } catch (err) {
       console.error('Failed to delete session:', err)
+      // 실패 시 이전 상태로 복구
+      queryClient.setQueryData(['sessions'], previousSessions)
+      if (currentSessionId === sessionId) {
+        setCurrentSessionId(sessionId)
+      }
       alert('세션 삭제에 실패했습니다.')
     }
   }
@@ -146,10 +169,11 @@ export default function SessionList() {
         <div className='flex items-center gap-1'>
           <button
             onClick={() => refetch()}
-            className='p-1.5 hover:bg-white/50 rounded-lg transition'
-            title='새로고침'>
+            className='cursor-pointer p-1.5 hover:bg-white/50 rounded-lg transition'
+            title='새로고침'
+            disabled={isFetching}>
             <svg
-              className='w-5 h-5 text-gray-600'
+              className={`w-5 h-5 text-gray-600 transition-transform ${isFetching ? 'animate-spin' : ''}`}
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'>
@@ -168,7 +192,7 @@ export default function SessionList() {
             ref={menuRef}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className='p-1.5 hover:bg-white/50 rounded-lg transition'
+              className='cursor-pointer p-1.5 hover:bg-white/50 rounded-lg transition'
               title='메뉴'>
               <svg
                 className='w-5 h-5 text-gray-600'
@@ -195,7 +219,7 @@ export default function SessionList() {
                   className='absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-10'>
                   <button
                     onClick={() => openDeleteModal()}
-                    className='w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2'>
+                    className='cursor-pointer w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2'>
                     <svg
                       className='w-4 h-4'
                       fill='none'
@@ -230,7 +254,7 @@ export default function SessionList() {
               className='relative group'>
               <button
                 onClick={() => setCurrentSessionId(session.sid)}
-                className={`w-full text-left p-3 rounded-lg transition-all ${currentSessionId === session.sid ? 'bg-blue-400 text-white shadow-md' : 'bg-white/50 hover:bg-white/80 text-gray-800'}`}>
+                className={`cursor-pointer w-full text-left p-3 rounded-lg transition-all ${currentSessionId === session.sid ? 'bg-blue-400 text-white shadow-md' : 'bg-white/50 hover:bg-white/80 text-gray-800'}`}>
                 <div className='flex items-start justify-between gap-2'>
                   <div className='flex flex-col gap-1 flex-1 min-w-0'>
                     <div className='font-medium line-clamp-2 text-sm'>{session.title}</div>
@@ -241,7 +265,7 @@ export default function SessionList() {
                       e.stopPropagation()
                       openDeleteModal(session.sid)
                     }}
-                    className={`p-1 rounded transition ${currentSessionId === session.sid ? 'opacity-100 hover:bg-blue-400' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-200'}`}
+                    className={`cursor-pointer p-1 rounded transition ${currentSessionId === session.sid ? 'opacity-100 hover:bg-blue-400' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-200'}`}
                     title='삭제'>
                     <svg
                       className='w-4 h-4'
