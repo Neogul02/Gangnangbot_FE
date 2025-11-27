@@ -120,7 +120,7 @@ export default function AuthCallbackPage() {
                   />
                 </svg>
               </div>
-              <h2 className='text-2xl font-bold text-green-600 mb-2'>로그인 성공!</h2>
+              <h2 className='text-2xl font-bold text-green-600 mb-2'>로그인 성공</h2>
               <p className='text-gray-700'>{message}</p>
             </>
           )}

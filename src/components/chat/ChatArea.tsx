@@ -287,7 +287,7 @@ export default function ChatArea() {
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim() || isLoading}
                     aria-label='메시지 전송'
-                    className='cursor-pointer shrink-0 w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 hover:scale-110 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center transition-all'>
+                    className='cursor-pointer shrink-0 w-12 h-12 rounded-full hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center transition-all bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,#4E92FF_0%,rgba(78,146,255,0.50)_100%)]'>
                     <svg
                       xmlns='http://www.w3.org/2000/svg'
                       viewBox='0 0 24 24'
@@ -564,11 +564,7 @@ export default function ChatArea() {
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isLoading}
                   aria-label='메시지 전송'
-                  className={`cursor-pointer shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 disabled:hover:scale-100 ${
-                    inputValue.trim()
-                      ? 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,#4E92FF_0%,rgba(78,146,255,0.50)_100%)]'
-                      : 'bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,#B2D0FF_0%,rgba(178,208,255,0.50)_70%,rgba(178,208,255,0)_100%)]'
-                  }`}>
+                  className='cursor-pointer shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,#4E92FF_0%,rgba(78,146,255,0.50)_100%)]'>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     viewBox='0 0 24 24'
